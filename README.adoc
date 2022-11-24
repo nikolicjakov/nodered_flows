@@ -1,0 +1,23 @@
+= Node-RED flow library
+:sectnums:
+
+Ovaj projekt je kolekcija flow template-a za Node-RED.
+
+== Requirements
+
+Kako bi koristili ove template potrebno je sljedeće..
+
+- Node-RED instanca (v3.0.2)
+```
+docker run -it -p 1880:1880 -v node_red_data:/data --name mynodered nodered/node-red:3.0.2
+```
+
+== Flows
+
+=== HEP
+
+==== racuni_api.json
+
+Requirements:
+
+Ovaj flow povlaci podatke sa web servisa mojracun.hep.hr. Ako nemate account potrebno ga je kreirati.

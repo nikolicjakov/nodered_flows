@@ -1,0 +1,319 @@
+[
+    {
+        "id": "499834714e66f2e0",
+        "type": "tab",
+        "label": "Home Automation",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "6134184a863c9afa",
+        "type": "http request",
+        "z": "499834714e66f2e0",
+        "name": "Login",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 570,
+        "y": 120,
+        "wires": [
+            [
+                "8a2993e07f82dc61",
+                "c57245d4078f697c"
+            ]
+        ]
+    },
+    {
+        "id": "4de89fec0314515b",
+        "type": "inject",
+        "z": "499834714e66f2e0",
+        "name": "",
+        "props": [
+            {
+                "p": "trigger",
+                "v": "1",
+                "vt": "num"
+            }
+        ],
+        "repeat": "86400",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "d196d090e384f16f"
+            ]
+        ]
+    },
+    {
+        "id": "87504c91ecc47c37",
+        "type": "function",
+        "z": "499834714e66f2e0",
+        "name": "HEP Login",
+        "func": "msg.headers = {}\nmsg.method = \"POST\"\nmsg.url = \"https://mojracun.hep.hr/elektra/api/korisnik/prijava\";\nmsg.headers[\"content-type\"] = \"application/json; charset=utf-8\"\n\n\nmsg.payload = { \n    \"username\": msg.username,\n    \"password\": msg.password,\n    \"prva\": true \n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 430,
+        "y": 120,
+        "wires": [
+            [
+                "6134184a863c9afa"
+            ]
+        ]
+    },
+    {
+        "id": "8a2993e07f82dc61",
+        "type": "function",
+        "z": "499834714e66f2e0",
+        "name": "HEP Pull Data",
+        "func": "var token = msg.payload.Token;\nvar clientId = msg.payload.KupacId;\n\nvar msg = {};\n\nmsg.headers = {\n    \"content-type\": \"application/json; charset=utf-8\",\n    \"Authorization\": \"Bearer \" + token\n}\nmsg.method = \"GET\"\nmsg.url = \"https://mojracun.hep.hr/elektra/api/promet/\" + clientId;\n\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 760,
+        "y": 120,
+        "wires": [
+            [
+                "0ca9cd414de483a9"
+            ]
+        ]
+    },
+    {
+        "id": "0ca9cd414de483a9",
+        "type": "http request",
+        "z": "499834714e66f2e0",
+        "name": "Fetch Data",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 930,
+        "y": 120,
+        "wires": [
+            [
+                "706016644bcc620c"
+            ]
+        ],
+        "icon": "font-awesome/fa-arrow-circle-o-down"
+    },
+    {
+        "id": "706016644bcc620c",
+        "type": "function",
+        "z": "499834714e66f2e0",
+        "name": "MQTT Structure",
+        "func": "var data = msg.payload\nvar dug = false;\n\nmsg = {};\n\nif(data.saldo[0].iznos > 0) {\n    dug = true;\n}\n\nmsg.payload = {\n    \"dug\": dug,\n    \"iznos\": data.saldo[0].iznos,\n    \"opis\": data.saldo[0].opis\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 120,
+        "wires": [
+            [
+                "2bb33704d49580a3",
+                "7b340294647df18d"
+            ]
+        ]
+    },
+    {
+        "id": "2bb33704d49580a3",
+        "type": "mqtt out",
+        "z": "499834714e66f2e0",
+        "name": "Store Result",
+        "topic": "data/hep/racuni",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "7cf12d81a38f8e75",
+        "x": 1290,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "d196d090e384f16f",
+        "type": "credentials",
+        "z": "499834714e66f2e0",
+        "name": "HEP Credentials",
+        "props": [
+            {
+                "value": "username",
+                "type": "msg"
+            },
+            {
+                "value": "password",
+                "type": "msg"
+            }
+        ],
+        "x": 260,
+        "y": 120,
+        "wires": [
+            [
+                "87504c91ecc47c37"
+            ]
+        ]
+    },
+    {
+        "id": "a9d10cce78ab2398",
+        "type": "comment",
+        "z": "499834714e66f2e0",
+        "name": "HEP API Računi",
+        "info": "",
+        "x": 120,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "c57245d4078f697c",
+        "type": "function",
+        "z": "499834714e66f2e0",
+        "name": "HEP Pull Data",
+        "func": "var token = msg.payload.Token;\nvar clientId = msg.payload.KupacId;\n\nvar msg = {};\n\nmsg.headers = {\n    \"content-type\": \"application/json; charset=utf-8\",\n    \"Authorization\": \"Bearer \" + token\n}\nmsg.method = \"GET\"\nmsg.url = \"https://mojracun.hep.hr/elektra/api/ocitanja/\" + clientId;\n\nreturn msg",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 760,
+        "y": 200,
+        "wires": [
+            [
+                "f0606f38f842ee23"
+            ]
+        ]
+    },
+    {
+        "id": "f0606f38f842ee23",
+        "type": "http request",
+        "z": "499834714e66f2e0",
+        "name": "Fetch Data",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 930,
+        "y": 200,
+        "wires": [
+            [
+                "cc9a78089db22ccc"
+            ]
+        ],
+        "icon": "font-awesome/fa-arrow-circle-o-down"
+    },
+    {
+        "id": "cc9a78089db22ccc",
+        "type": "function",
+        "z": "499834714e66f2e0",
+        "name": "MQTT Structure",
+        "func": "var data = msg.payload\nlet tarifa1 = parseFloat(data[0].Tarifa1);\nlet tarifa2 = parseFloat(data[0].Tarifa2);\n\nmsg = {};\n\nmsg.payload = {\n    \"skupa_tarifa\": tarifa1,\n    \"jeftina_tarifa\": tarifa2,\n    \"datum\": data[0].Datum,\n    \"ocitao\": data[0].NacinOcitanja\n};\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 200,
+        "wires": [
+            [
+                "f1d5026f7051b87e",
+                "7b340294647df18d"
+            ]
+        ]
+    },
+    {
+        "id": "f1d5026f7051b87e",
+        "type": "mqtt out",
+        "z": "499834714e66f2e0",
+        "name": "Store Result",
+        "topic": "data/hep/stanje",
+        "qos": "1",
+        "retain": "true",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "7cf12d81a38f8e75",
+        "x": 1290,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "7b340294647df18d",
+        "type": "debug",
+        "z": "499834714e66f2e0",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1280,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "7cf12d81a38f8e75",
+        "type": "mqtt-broker",
+        "name": "Home MQTT Server",
+        "broker": "192.160.89.16",
+        "port": "1883",
+        "clientid": "nodered",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    }
+]
